@@ -1,0 +1,403 @@
+// ============================================================
+// GALERIE ANTIQUITÉS — Prisma Schema
+// PostgreSQL + Prisma ORM
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  ADMIN
+  VENDOR
+  BUYER
+}
+
+enum StockLocation {
+  AT_RESIDENCE  // Item stored at the owner's residence/home
+  AT_VENDOR     // Item stored at the vendor's premises
+}
+
+enum ListingStatus {
+  DRAFT           // Vendor created, not yet submitted
+  PENDING_REVIEW  // Submitted by vendor, awaiting admin review
+  REVISION        // Admin requested changes from vendor
+  LIVE            // Approved and visible to buyers
+  RESERVED        // Payment initiated, pending completion
+  SOLD            // Transaction complete
+  REJECTED        // Admin rejected
+  ARCHIVED        // Removed from sale, kept for records
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT  // Checkout initiated, not yet paid
+  PAYMENT_HELD     // Funds received and held in escrow
+  SHIPPED          // Vendor has shipped the item
+  DELIVERED        // Delivery confirmed by vendor/tracking
+  CONFIRMED        // Buyer confirmed reception & satisfaction
+  FUNDS_RELEASED   // Funds transferred to vendor
+  DISPUTED         // Buyer opened a dispute
+  REFUNDED         // Buyer refunded, listing back to LIVE
+  CANCELLED        // Order cancelled before payment
+}
+
+enum ShippingMethod {
+  COLISSIMO
+  CHRONOPOST
+  DHL
+  FEDEX
+  MONDIAL_RELAY
+  PERSONAL_DELIVERY // In-person handover
+  OTHER
+}
+
+// ============================================================
+// USER & AUTH
+// ============================================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?   // hashed with bcrypt
+  role          UserRole  @default(BUYER)
+
+  // Vendor-specific
+  vendorProfile VendorProfile?
+
+  // Stripe Connect (for vendors)
+  stripeAccountId     String?   // Stripe Express account ID
+  stripeOnboarded     Boolean   @default(false)
+  stripeDetailsSubmitted Boolean @default(false)
+
+  // Relations
+  accounts   Account[]
+  sessions   Session[]
+  listings   Listing[]   // Vendor's listings
+  orders     Order[]     // Buyer's orders
+  reviews    Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+model VendorProfile {
+  id          String  @id @default(cuid())
+  userId      String  @unique
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  businessName    String
+  description     String?   @db.Text
+  phone           String?
+  address         String?
+  city            String?
+  country         String    @default("France")
+  siret           String?   // French business registration
+  vatNumber       String?
+
+  // Coordonnées bancaires pour virement SEPA (remplace Stripe Connect)
+  iban            String?
+  bicSwift        String?
+  bankName        String?
+
+  // Verification
+  isVerified    Boolean @default(false)
+  verifiedAt    DateTime?
+
+  // Stats (denormalized for performance)
+  totalSales    Int     @default(0)
+  totalRevenue  Decimal @default(0) @db.Decimal(10, 2)
+  rating        Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// NextAuth.js adapter models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================================
+// LISTINGS / CATALOG
+// ============================================================
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  nameEn      String?
+  slug        String    @unique
+  description String?   @db.Text
+  imageUrl    String?
+  order       Int       @default(0)
+  parentId    String?
+  parent      Category? @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
+  listings    Listing[]
+
+  createdAt DateTime @default(now())
+}
+
+model Listing {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  status      ListingStatus @default(DRAFT)
+
+  // Core info (editable by vendor, overrideable by admin)
+  title           String
+  titleAdmin      String?   // Admin override
+  description     String    @db.Text
+  descriptionAdmin String?  @db.Text // Admin override
+  provenance      String?   @db.Text // Origin story
+  period          String?   // e.g. "XIXe siècle"
+  origin          String?   // Geographic origin
+  dimensions      String?   // e.g. "H: 45cm, L: 30cm, P: 20cm"
+  weight          String?   // e.g. "2.5 kg"
+  condition       String?   // État de conservation
+  materials       String?   // e.g. "Bronze, marbre"
+
+  // Pricing
+  price           Decimal   @db.Decimal(10, 2)
+  priceAdmin      Decimal?  @db.Decimal(10, 2) // Admin override
+  currency        String    @default("EUR")
+
+  // Stock & location
+  stockLocation   StockLocation @default(AT_VENDOR)
+  quantity        Int           @default(1)
+
+  // Shipping
+  shippingAvailable   Boolean         @default(true)
+  shippingMethods     ShippingMethod[]
+  shippingCost        Decimal?        @db.Decimal(10, 2)
+  shippingDetails     String?         @db.Text
+  pickupAvailable     Boolean         @default(false)
+
+  // SEO / Meta
+  metaTitle       String?
+  metaDescription String?
+
+  // Admin moderation
+  adminNotes      String?   @db.Text  // Internal notes
+  rejectionReason String?   @db.Text
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  reviewedBy      String?   // Admin user ID
+  publishedAt     DateTime?
+
+  // Relations
+  vendorId    String
+  vendor      User        @relation(fields: [vendorId], references: [id])
+  categoryId  String?
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  images      ListingImage[]
+  orders      Order[]
+  reviews     Review[]
+  tags        ListingTag[]
+
+  // Analytics
+  viewCount   Int @default(0)
+  favoriteCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([vendorId])
+  @@index([categoryId])
+  @@index([period])
+  @@index([stockLocation])
+  @@index([price])
+}
+
+model ListingImage {
+  id          String  @id @default(cuid())
+  listingId   String
+  listing     Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  url             String  // Cloudinary secure URL
+  publicId        String  // Cloudinary public ID for management
+  thumbnailUrl    String? // Cloudinary thumbnail transformation
+  altText         String?
+  order           Int     @default(0)  // Display order
+  isPrimary       Boolean @default(false)
+  width           Int?
+  height          Int?
+
+  // Admin can add/replace images
+  uploadedBy  String  // User ID
+  isAdminAdded Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([listingId])
+  @@index([order])
+}
+
+model Tag {
+  id       String       @id @default(cuid())
+  name     String       @unique
+  slug     String       @unique
+  listings ListingTag[]
+}
+
+model ListingTag {
+  listingId String
+  tagId     String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, tagId])
+}
+
+// ============================================================
+// ORDERS & PAYMENTS (ESCROW)
+// ============================================================
+
+model Order {
+  id     String      @id @default(cuid())
+  status OrderStatus @default(PENDING_PAYMENT)
+
+  // Parties
+  buyerId   String
+  buyer     User    @relation(fields: [buyerId], references: [id])
+  vendorId  String  // Denormalized from listing for query performance
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  // Financials (all in EUR cents stored as Decimal)
+  subtotal        Decimal  @db.Decimal(10, 2) // Listing price at time of sale
+  platformFee     Decimal  @db.Decimal(10, 2) // Platform commission
+  shippingCost    Decimal  @db.Decimal(10, 2) @default(0)
+  total           Decimal  @db.Decimal(10, 2) // Total charged to buyer
+  vendorAmount    Decimal  @db.Decimal(10, 2) // Amount to release to vendor
+
+  currency        String   @default("EUR")
+
+  // Stripe
+  stripePaymentIntentId   String?  @unique
+  stripeTransferId        String?  // Transfer to vendor on release
+  stripeRefundId          String?
+
+  // Shipping
+  shippingMethod      ShippingMethod?
+  shippingAddress     Json?   // { name, line1, line2, city, postal_code, country }
+  trackingNumber      String?
+  trackingCarrier     String?
+  shippedAt           DateTime?
+  deliveredAt         DateTime?
+
+  // Buyer confirmation
+  confirmedAt         DateTime?
+  confirmedNote       String?   @db.Text
+
+  // Escrow release
+  fundsReleasedAt     DateTime?
+  fundsReleasedBy     String?   // Admin user ID
+
+  // Dispute
+  disputeReason       String?   @db.Text
+  disputeOpenedAt     DateTime?
+  disputeResolvedAt   DateTime?
+
+  // Timeline events stored as JSON for flexibility
+  timeline            Json?   // Array of { event, timestamp, actor, note }
+
+  review Review?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([buyerId])
+  @@index([vendorId])
+  @@index([listingId])
+  @@index([status])
+  @@index([stripePaymentIntentId])
+}
+
+// ============================================================
+// REVIEWS
+// ============================================================
+
+model Review {
+  id        String  @id @default(cuid())
+  orderId   String  @unique
+  order     Order   @relation(fields: [orderId], references: [id])
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  rating    Int     // 1-5
+  comment   String? @db.Text
+  isPublic  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  @@index([listingId])
+  @@index([userId])
+}
+
+// ============================================================
+// ADMIN AUDIT LOG
+// ============================================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String   // Actor
+  action    String   // e.g. "LISTING_APPROVED", "FUNDS_RELEASED"
+  entity    String   // e.g. "Listing", "Order"
+  entityId  String
+  metadata  Json?    // Additional context
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
