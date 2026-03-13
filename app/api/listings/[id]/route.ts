@@ -73,6 +73,17 @@ const updateSchema = z.object({
   categoryId: z.string().optional(),
   shippingCost: z.number().optional(),
   shippingDetails: z.string().optional(),
+  shippingAvailable: z.boolean().optional(),
+  pickupAvailable: z.boolean().optional(),
+  weight: z.string().optional(),
+  // Image management
+  keepImageIds: z.array(z.string()).optional(),
+  newImages: z.array(z.object({
+    url: z.string(),
+    publicId: z.string(),
+    isPrimary: z.boolean(),
+    order: z.number(),
+  })).optional(),
   // Admin-only fields
   titleAdmin: z.string().optional(),
   descriptionAdmin: z.string().optional(),
@@ -133,11 +144,35 @@ export async function PATCH(
       statusUpdates.reviewedBy = session.user.id;
     }
 
+    // If vendor edits a LIVE listing → back to PENDING_REVIEW
+    if (!isAdmin && listing.status === ListingStatus.LIVE) {
+      statusUpdates.status = ListingStatus.PENDING_REVIEW;
+      statusUpdates.submittedAt = new Date();
+    }
+
+    const { keepImageIds, newImages, ...listingData } = data;
+
     const updated = await prisma.listing.update({
       where: { id: id },
-      data: { ...data, ...statusUpdates },
+      data: { ...listingData, ...statusUpdates },
       include: { images: true, category: true },
     });
+
+    // Handle image changes
+    if (keepImageIds !== undefined) {
+      await prisma.listingImage.deleteMany({
+        where: { listingId: id, id: { notIn: keepImageIds } },
+      });
+    }
+    if (newImages && newImages.length > 0) {
+      await prisma.listingImage.createMany({
+        data: newImages.map((img) => ({
+          ...img,
+          listingId: id,
+          uploadedBy: session.user.id,
+        })),
+      });
+    }
 
     // Audit log
     if (isAdmin && data.status) {
@@ -185,10 +220,13 @@ export async function DELETE(
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 
-  // Only allow deletion of DRAFT / REJECTED listings
-  if (!["DRAFT", "REJECTED", "ARCHIVED"].includes(listing.status)) {
+  // Vendors can archive anything except RESERVED/SOLD
+  const archivable = isAdmin
+    ? ["DRAFT", "PENDING_REVIEW", "REVISION", "LIVE", "REJECTED"]
+    : ["DRAFT", "PENDING_REVIEW", "REVISION", "LIVE", "REJECTED"];
+  if (!archivable.includes(listing.status)) {
     return NextResponse.json(
-      { error: "Impossible de supprimer une annonce active" },
+      { error: "Impossible de retirer une annonce avec une commande en cours" },
       { status: 400 }
     );
   }

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
 import { PlusCircle, Package } from "lucide-react";
+import ListingActions from "@/components/vendeur/ListingActions";
 
 export const dynamic = "force-dynamic";
 
@@ -113,6 +114,7 @@ export default async function VendeurAnnoncesPage() {
                     <Badge variant={STATUS_VARIANTS[listing.status] ?? "default"} className="text-xs">
                       {STATUS_LABELS[listing.status] ?? listing.status}
                     </Badge>
+                    <ListingActions listingId={listing.id} status={listing.status} />
                   </div>
                 </div>
               );
