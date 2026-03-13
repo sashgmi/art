@@ -113,17 +113,6 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        {/* Demo credentials */}
-        <div className="mt-8 rounded-sm bg-stone-50 border border-border p-4">
-          <p className="text-xs font-medium text-muted-foreground mb-2">
-            Comptes de démonstration
-          </p>
-          <div className="space-y-1 text-xs text-muted-foreground font-mono">
-            <p>Admin: admin@galerie-antiquites.fr / admin123!</p>
-            <p>Vendeur: vendeur@galerie-antiquites.fr / vendeur123!</p>
-            <p>Acheteur: acheteur@test.fr / acheteur123!</p>
-          </div>
-        </div>
       </div>
 
       {/* Right: Image */}
