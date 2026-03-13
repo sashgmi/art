@@ -2,6 +2,78 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+## SESSION SNAPSHOT — 2026-03-13
+
+### Project State
+- **DEPLOYED & LIVE** at `https://art-sash2.vercel.app`
+- GitHub repo: `https://github.com/sashgmi/art` (branch `main`)
+- Vercel project: `art` (team: sash, Hobby plan)
+- Deployment Protection: **disabled** (site is publicly accessible)
+- Production DB: **Neon PostgreSQL** (tables created, empty — no seed data yet)
+- Local DB: `postgresql://admin@localhost/galerie_antiquites`
+
+### What Works
+- Full site deployed and publicly accessible
+- All pages render: home, catalogue, connexion, inscription, admin, vendeur
+- Prisma schema synced to Neon (tables exist, empty)
+- Cloudinary uploads (reusing existing account, images stored under `galerie/{listingId}/`)
+- NextAuth JWT auth
+- Resend emails: lazy-initialized, silently skipped if `RESEND_API_KEY` absent
+
+### What's NOT Configured Yet
+- **Stripe**: placeholder keys (`sk_test_placeholder` etc.) — payments non-functional. Waiting for SIRET/TVA to create real Stripe account.
+- **Resend**: no `RESEND_API_KEY` in Vercel env vars — emails not sent (site still works)
+- **Seed data**: Neon DB is empty — no admin/vendor/buyer accounts exist in production
+
+### Vercel Environment Variables (production)
+| Variable | Status |
+|---|---|
+| `DATABASE_URL` | ✅ Neon URL configured |
+| `NEXTAUTH_SECRET` | ✅ configured |
+| `NEXTAUTH_URL` | ✅ `https://art-sash2.vercel.app` |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ⚠️ placeholder |
+| `STRIPE_SECRET_KEY` | ⚠️ placeholder |
+| `STRIPE_WEBHOOK_SECRET` | ⚠️ placeholder |
+| `CLOUDINARY_CLOUD_NAME` | ✅ configured |
+| `CLOUDINARY_API_KEY` | ✅ configured |
+| `CLOUDINARY_API_SECRET` | ✅ configured |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | ✅ configured |
+| `RESEND_API_KEY` | ❌ not set |
+| `RESEND_FROM_EMAIL` | ❌ not set |
+
+### Bugs Fixed This Session
+1. **Prisma build error on Vercel** — added `prisma generate &&` to build script in `package.json`
+2. **Resend init crash at build time** — changed `lib/email.ts` to lazy-initialize Resend client (only created on first `sendEmail()` call, not at module load)
+
+### Exact Next Steps
+1. **Seed the Neon DB** — run locally to create admin/vendor/buyer demo accounts:
+   ```bash
+   DATABASE_URL="<neon_url>" npm run db:seed
+   ```
+2. **Configure Stripe** — when SIRET/TVA ready, create Stripe account, replace placeholder keys in Vercel Settings → Environment Variables, then redeploy
+3. **Configure Resend** — create account at resend.com, add `RESEND_API_KEY` and `RESEND_FROM_EMAIL` to Vercel env vars
+4. **Set up Stripe webhook** — after real Stripe keys, run `stripe listen` or configure Vercel webhook URL in Stripe dashboard (`https://art-sash2.vercel.app/api/stripe/webhook`)
+5. **Update `NEXTAUTH_URL`** — if custom domain is added later, update this env var
+
+### Deploy Commands
+```bash
+# Push code changes → Vercel auto-deploys on git push to main
+git add . && git commit -m "message" && git push
+
+# Sync schema changes to Neon
+DATABASE_URL="<neon_url>" npx prisma db push
+
+# Seed demo data to Neon
+DATABASE_URL="<neon_url>" npm run db:seed
+
+# Generate Prisma client locally after schema changes
+npm run db:generate
+```
+
+---
+
 ## Project Overview
 
 **Galerie Antiquités** — a high-end French-language antique & art marketplace. The platform acts as an escrow intermediary: buyers pay the platform, funds are held until buyer confirms reception, then admin releases to vendor.
