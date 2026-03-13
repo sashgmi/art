@@ -110,7 +110,7 @@ export default function Navbar() {
               {profileOpen && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setProfileOpen(false)} />
-                  <div className="absolute right-0 top-full z-20 mt-2 w-56 rounded-sm border bg-white p-1.5 shadow-lg">
+                  <div className="absolute right-0 top-full z-20 mt-2 w-56 rounded-sm border bg-white p-1.5 shadow-lg text-gray-900">
                     <div className="px-3 py-2 text-xs text-muted-foreground border-b mb-1">
                       <div className="font-medium text-foreground">{session.user?.name}</div>
                       <div>{session.user?.email}</div>
