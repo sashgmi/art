@@ -1,6 +1,10 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 const FROM = process.env.RESEND_FROM_EMAIL || "noreply@galerie-antiquites.fr";
 
@@ -17,7 +21,7 @@ interface SendEmailParams {
 export function sendEmail(params: SendEmailParams): void {
   if (!process.env.RESEND_API_KEY) return;
 
-  resend.emails
+  getResend().emails
     .send({ from: FROM, ...params })
     .catch((err) => console.error("[Email error]", params.subject, err));
 }
