@@ -4,58 +4,89 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
-## SESSION SNAPSHOT — 2026-03-13
+## SESSION SNAPSHOT — 2026-03-14
 
 ### Project State
 - **DEPLOYED & LIVE** at `https://art-sash2.vercel.app`
-- GitHub repo: `https://github.com/sashgmi/art` (branch `main`)
+- GitHub repo: `https://github.com/sashgmi/art` (branch `main`, auto-deploy on push)
 - Vercel project: `art` (team: sash, Hobby plan)
-- Deployment Protection: **disabled** (site is publicly accessible)
-- Production DB: **Neon PostgreSQL** (tables created, empty — no seed data yet)
+- Deployment Protection: **disabled** (publicly accessible)
+- Production DB: **Neon PostgreSQL** — tables exist, seeded with demo data
 - Local DB: `postgresql://admin@localhost/galerie_antiquites`
 
-### What Works
-- Full site deployed and publicly accessible
-- All pages render: home, catalogue, connexion, inscription, admin, vendeur
-- Prisma schema synced to Neon (tables exist, empty)
-- Cloudinary uploads (reusing existing account, images stored under `galerie/{listingId}/`)
-- NextAuth JWT auth
-- Resend emails: lazy-initialized, silently skipped if `RESEND_API_KEY` absent
+### What Works (fully functional)
+- Public site: home, catalogue, catégories, provenance, product detail
+- Auth: inscription (BUYER/VENDOR), connexion, déconnexion → redirige vers `/`
+- Admin dashboard: `/admin` — modération annonces, commandes séquestre, liste vendeurs
+- Vendor dashboard: `/vendeur` — annonces, ventes, paiements (IBAN + Stripe Connect), compte
+- **Modifier/Retirer annonces** (vendeur) — `/vendeur/annonces/[id]/modifier`
+  - Modification d'une annonce LIVE → repasse auto en PENDING_REVIEW
+  - Archivage possible pour DRAFT/PENDING/REVISION/LIVE (pas RESERVED/SOLD)
+- Buyer: `/compte/commandes`, confirmation réception
+- Navbar dropdown: texte visible (fix text-gray-900)
+- `/compte` redirige selon rôle (ADMIN→/admin, VENDOR→/vendeur/compte, BUYER→/compte/commandes)
+- Cloudinary uploads fonctionnels
+- Resend: lazy-init, silencieux si clé absente
 
 ### What's NOT Configured Yet
-- **Stripe**: placeholder keys (`sk_test_placeholder` etc.) — payments non-functional. Waiting for SIRET/TVA to create real Stripe account.
-- **Resend**: no `RESEND_API_KEY` in Vercel env vars — emails not sent (site still works)
-- **Seed data**: Neon DB is empty — no admin/vendor/buyer accounts exist in production
+- **Stripe**: placeholders — paiements non-fonctionnels. En attente SIRET/TVA.
+- **Resend**: `RESEND_API_KEY` absent de Vercel — emails non envoyés (site fonctionne quand même)
 
 ### Vercel Environment Variables (production)
 | Variable | Status |
 |---|---|
-| `DATABASE_URL` | ✅ Neon URL configured |
-| `NEXTAUTH_SECRET` | ✅ configured |
+| `DATABASE_URL` | ✅ Neon |
+| `NEXTAUTH_SECRET` | ✅ |
 | `NEXTAUTH_URL` | ✅ `https://art-sash2.vercel.app` |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ⚠️ placeholder |
 | `STRIPE_SECRET_KEY` | ⚠️ placeholder |
 | `STRIPE_WEBHOOK_SECRET` | ⚠️ placeholder |
-| `CLOUDINARY_CLOUD_NAME` | ✅ configured |
-| `CLOUDINARY_API_KEY` | ✅ configured |
-| `CLOUDINARY_API_SECRET` | ✅ configured |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | ✅ configured |
+| `CLOUDINARY_CLOUD_NAME` | ✅ |
+| `CLOUDINARY_API_KEY` | ✅ |
+| `CLOUDINARY_API_SECRET` | ✅ |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | ✅ |
 | `RESEND_API_KEY` | ❌ not set |
 | `RESEND_FROM_EMAIL` | ❌ not set |
 
-### Bugs Fixed This Session
-1. **Prisma build error on Vercel** — added `prisma generate &&` to build script in `package.json`
-2. **Resend init crash at build time** — changed `lib/email.ts` to lazy-initialize Resend client (only created on first `sendEmail()` call, not at module load)
+### Demo Accounts (Neon DB — seeded)
+- Admin: `admin@galerie-antiquites.fr` / `admin123!`
+- Vendor: `vendeur@galerie-antiquites.fr` / `vendeur123!`
+- Buyer: `acheteur@test.fr` / `acheteur123!`
+- Owner account: role ADMIN, created via Prisma Studio (email known to owner only)
+
+### Critical Files
+| File | Role |
+|---|---|
+| `app/vendeur/annonces/[id]/modifier/EditListingForm.tsx` | Formulaire édition annonce vendeur |
+| `app/vendeur/annonces/[id]/modifier/page.tsx` | Page édition — vérifie propriété + statut |
+| `components/vendeur/ListingActions.tsx` | Boutons Modifier/Retirer (client) |
+| `app/api/listings/[id]/route.ts` | PATCH: auto PENDING_REVIEW si LIVE; images keep/add/delete |
+| `app/compte/page.tsx` | Redirect selon rôle |
+| `lib/email.ts` | Resend lazy singleton |
+| `lib/stripe.ts` | Stripe lazy Proxy singleton |
+| `middleware.ts` | Protection routes /admin et /vendeur |
+
+### Bugs Fixed
+1. **Prisma build error** → `"build": "prisma generate && next build"` dans `package.json`
+2. **Resend crash au build** → lazy-init dans `lib/email.ts`
+3. **Dropdown navbar blanc sur blanc** → `text-gray-900` sur le conteneur dropdown
+4. **`/compte` → 404** → créé `app/compte/page.tsx` avec redirect selon rôle
+5. **Déconnexion → mauvaise URL** → `NEXTAUTH_URL` corrigé dans Vercel (`art-sash2.vercel.app`)
+6. **Credentials démo visibles** → supprimés de `app/connexion/page.tsx`
 
 ### Exact Next Steps
-1. **Seed the Neon DB** — run locally to create admin/vendor/buyer demo accounts:
-   ```bash
-   DATABASE_URL="<neon_url>" npm run db:seed
-   ```
-2. **Configure Stripe** — when SIRET/TVA ready, create Stripe account, replace placeholder keys in Vercel Settings → Environment Variables, then redeploy
-3. **Configure Resend** — create account at resend.com, add `RESEND_API_KEY` and `RESEND_FROM_EMAIL` to Vercel env vars
-4. **Set up Stripe webhook** — after real Stripe keys, run `stripe listen` or configure Vercel webhook URL in Stripe dashboard (`https://art-sash2.vercel.app/api/stripe/webhook`)
-5. **Update `NEXTAUTH_URL`** — if custom domain is added later, update this env var
+1. **Configurer Stripe** — quand SIRET/TVA prêt :
+   - Créer compte Stripe → récupérer `pk_live_...` et `sk_live_...`
+   - Remplacer les placeholders dans Vercel → Settings → Environment Variables
+   - Configurer webhook Stripe : URL = `https://art-sash2.vercel.app/api/stripe/webhook`
+   - Mettre à jour `STRIPE_WEBHOOK_SECRET` dans Vercel
+   - Redéployer
+2. **Configurer Resend** — pour activer les emails :
+   - Créer compte sur resend.com
+   - Ajouter `RESEND_API_KEY` et `RESEND_FROM_EMAIL` dans Vercel env vars
+   - En prod : vérifier un domaine sur Resend pour envoyer à n'importe qui
+3. **Domaine personnalisé** — si domaine acheté, ajouter dans Vercel → Domains + mettre à jour `NEXTAUTH_URL`
+4. **Continuer l'exploration UI** — des bugs ou améliorations UX à identifier en naviguant le site
 
 ### Deploy Commands
 ```bash
