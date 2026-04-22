@@ -32,23 +32,23 @@ export default function FeaturedListings({ listings }: Props) {
   return (
     <>
       {/* ── Intro split block ─────────────────────────────── */}
-      <section className="border-b border-border bg-white py-14">
+      <section className="border-b border-border bg-white py-10 sm:py-14">
         <div className="container mx-auto max-w-7xl px-4 lg:px-8">
-          <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-16">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:gap-16">
 
             {/* Left — text */}
             <div className="flex-1 min-w-0">
-              <p className="text-xs uppercase tracking-[0.2em] text-gold-600 font-medium mb-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-gold-600 font-medium mb-3 sm:mb-4">
                 Sélection d&apos;experts
               </p>
-              <h2 className="font-serif text-4xl font-semibold leading-snug text-foreground mb-4 lg:text-5xl">
+              <h2 className="font-serif text-3xl sm:text-4xl font-semibold leading-snug text-foreground mb-4 lg:text-5xl">
                 Antiquités & Art
                 <br />
                 <span className="font-light italic text-muted-foreground">
                   d&apos;Exception
                 </span>
               </h2>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mb-8">
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mb-6 sm:mb-8">
                 Chaque pièce est certifiée par nos experts et vendue avec
                 paiement sécurisé en séquestre.
               </p>
@@ -90,7 +90,7 @@ export default function FeaturedListings({ listings }: Props) {
       </section>
 
       {/* ── Listings grid ──────────────────────────────────── */}
-      <section className="py-14 bg-white">
+      <section className="py-10 sm:py-14 bg-white">
         <div className="container mx-auto max-w-7xl px-4 lg:px-8">
           <div className="museum-grid">
             {listings.map((listing, i) => (
@@ -98,7 +98,7 @@ export default function FeaturedListings({ listings }: Props) {
             ))}
           </div>
 
-          <div className="mt-12 text-center">
+          <div className="mt-10 sm:mt-12 text-center">
             <Link href="/catalogue">
               <Button variant="gold-outline" size="lg" className="group">
                 Voir tout le catalogue

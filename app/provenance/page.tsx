@@ -28,27 +28,27 @@ const sections = [
 
 export default function ProvenancePage() {
   return (
-    <div className="min-h-screen bg-background pt-24 pb-16">
+    <div className="min-h-screen bg-background pt-20 pb-12 sm:pt-24 sm:pb-16">
       <div className="container mx-auto max-w-3xl px-4 lg:px-8">
         {/* Header */}
-        <div className="mb-12 text-center">
+        <div className="mb-10 sm:mb-12 text-center">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">
             Notre engagement
           </p>
-          <h1 className="font-serif text-4xl font-medium text-foreground mb-4">
+          <h1 className="font-serif text-3xl sm:text-4xl font-medium text-foreground mb-4">
             Provenance & Garanties
           </h1>
           <div className="gold-divider mx-auto mb-6" />
-          <p className="text-muted-foreground leading-relaxed">
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
             L&apos;authenticité est au cœur de notre démarche. Voici comment nous protégeons acheteurs et vendeurs à chaque étape.
           </p>
         </div>
 
         {/* Sections */}
-        <div className="space-y-10">
+        <div className="space-y-8 sm:space-y-10">
           {sections.map((section, i) => (
-            <div key={i} className="border-l-2 border-gold-300 pl-6">
-              <h2 className="font-serif text-xl font-medium text-foreground mb-3">
+            <div key={i} className="border-l-2 border-gold-300 pl-4 sm:pl-6">
+              <h2 className="font-serif text-lg sm:text-xl font-medium text-foreground mb-3">
                 {section.title}
               </h2>
               <p className="text-muted-foreground leading-relaxed text-sm">
@@ -59,16 +59,16 @@ export default function ProvenancePage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-16 text-center border border-border rounded-sm p-8">
+        <div className="mt-12 sm:mt-16 text-center border border-border rounded-sm p-6 sm:p-8">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">
             Une question ?
           </p>
-          <h3 className="font-serif text-2xl font-medium text-foreground mb-4">
+          <h3 className="font-serif text-xl sm:text-2xl font-medium text-foreground mb-4">
             Contactez nos experts
           </h3>
           <a
             href="mailto:experts@galerie-antiquites.fr"
-            className="text-gold-600 hover:text-gold-700 text-sm tracking-wide transition-colors"
+            className="text-gold-600 hover:text-gold-700 text-sm tracking-wide transition-colors break-all"
           >
             experts@galerie-antiquites.fr
           </a>

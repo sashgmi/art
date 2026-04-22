@@ -306,14 +306,14 @@ export default function CheckoutModal({ open, onClose, listing }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-lg rounded-md bg-white shadow-xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-lg sm:rounded-md bg-white shadow-xl flex flex-col max-h-[95vh] sm:max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b p-5">
+        <div className="flex items-center justify-between border-b p-4 sm:p-5 shrink-0">
           <div className="flex items-center gap-3">
             {listing.images[0] && (
               <div className="relative h-12 w-12 rounded-sm overflow-hidden bg-muted">
@@ -344,7 +344,7 @@ export default function CheckoutModal({ open, onClose, listing }: Props) {
 
         {/* Steps indicator */}
         {step !== "success" && (
-          <div className="flex border-b">
+          <div className="flex border-b shrink-0">
             {["shipping", "payment"].map((s, i) => (
               <div
                 key={s}
@@ -361,7 +361,7 @@ export default function CheckoutModal({ open, onClose, listing }: Props) {
         )}
 
         {/* Content */}
-        <div className="p-5">
+        <div className="p-4 sm:p-5 overflow-y-auto flex-1">
           {step === "shipping" && (
             <ShippingForm onNext={handleShippingNext} listing={listing} />
           )}

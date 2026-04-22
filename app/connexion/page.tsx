@@ -88,16 +88,16 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left: Form */}
-      <div className="flex flex-1 flex-col justify-center px-8 py-16 lg:px-16 max-w-lg mx-auto w-full">
-        <div className="mb-10">
-          <Link href="/" className="flex items-center gap-2 mb-8">
+      <div className="flex flex-1 flex-col justify-center px-5 py-10 sm:px-8 sm:py-16 lg:px-16 max-w-lg mx-auto w-full">
+        <div className="mb-8 sm:mb-10">
+          <Link href="/" className="flex items-center gap-2 mb-6 sm:mb-8">
             <Gem className="h-5 w-5 text-gold-500" />
             <span className="font-serif text-lg font-semibold">
               Galerie Antiquités
             </span>
           </Link>
-          <h1 className="font-serif text-3xl font-semibold">Connexion</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="font-serif text-2xl sm:text-3xl font-semibold">Connexion</h1>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Bienvenue. Connectez-vous à votre compte.
           </p>
         </div>

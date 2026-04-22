@@ -18,26 +18,26 @@ export default async function CategoriesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-16">
+    <div className="min-h-screen bg-background pt-20 pb-12 sm:pt-24 sm:pb-16">
       <div className="container mx-auto max-w-6xl px-4 lg:px-8">
         {/* Header */}
-        <div className="mb-12 text-center">
+        <div className="mb-10 sm:mb-12 text-center">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">
             Collections
           </p>
-          <h1 className="font-serif text-4xl font-medium text-foreground mb-4">
+          <h1 className="font-serif text-3xl sm:text-4xl font-medium text-foreground mb-4">
             Catégories
           </h1>
           <div className="gold-divider mx-auto" />
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {categories.map((cat) => (
             <Link
               key={cat.id}
               href={`/catalogue?categoryId=${cat.id}`}
-              className="group block border border-border rounded-sm p-8 hover:border-gold-400 transition-colors"
+              className="group block border border-border rounded-sm p-6 sm:p-8 hover:border-gold-400 transition-colors"
             >
               <h2 className="font-serif text-xl font-medium text-foreground group-hover:text-gold-600 transition-colors mb-2">
                 {cat.name}

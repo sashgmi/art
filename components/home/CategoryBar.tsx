@@ -88,13 +88,13 @@ function CategoryIcon({ slug }: { slug: string }) {
 export default function CategoryBar({ categories, activeCategoryId }: Props) {
   return (
     <div className="border-b border-border bg-white mt-3">
-      <div className="container mx-auto max-w-7xl px-4 lg:px-8">
-        <div className="flex items-stretch justify-between">
+      <div className="container mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
+        <div className="flex items-stretch overflow-x-auto scrollbar-none sm:justify-between">
           {/* "Tous" tab */}
           <Link
             href="/"
             className={cn(
-              "flex flex-col items-center gap-1 px-2 py-3 text-[11px] border-b-2 transition-colors flex-1",
+              "flex flex-col items-center gap-1 px-3 py-3 text-[11px] border-b-2 transition-colors shrink-0 sm:flex-1 sm:shrink",
               !activeCategoryId
                 ? "border-gold-500 text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -112,7 +112,7 @@ export default function CategoryBar({ categories, activeCategoryId }: Props) {
               key={cat.id}
               href={`/catalogue?categoryId=${cat.id}`}
               className={cn(
-                "flex flex-col items-center gap-1 px-2 py-3 text-[11px] border-b-2 transition-colors flex-1",
+                "flex flex-col items-center gap-1 px-3 py-3 text-[11px] border-b-2 transition-colors shrink-0 sm:flex-1 sm:shrink",
                 activeCategoryId === cat.id
                   ? "border-gold-500 text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"

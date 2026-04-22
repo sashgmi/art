@@ -34,9 +34,9 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section className="py-24 bg-white">
+    <section className="py-16 sm:py-24 bg-white">
       <div className="container mx-auto max-w-7xl px-4 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-10 sm:mb-16">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="gold-divider" />
             <span className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium">
@@ -44,16 +44,16 @@ export default function HowItWorks() {
             </span>
             <div className="gold-divider" />
           </div>
-          <h2 className="font-serif text-4xl font-semibold tracking-tight">
+          <h2 className="font-serif text-3xl sm:text-4xl font-semibold tracking-tight">
             Comment ça Fonctionne
           </h2>
-          <p className="mt-3 text-muted-foreground max-w-md mx-auto">
+          <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-md mx-auto">
             Un processus d&apos;achat entièrement sécurisé, de la découverte à
             la livraison
           </p>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, i) => (
             <div key={i} className="relative">
               {/* Connector line */}

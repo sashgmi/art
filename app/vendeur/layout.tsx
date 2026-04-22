@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Gem, LayoutDashboard, Package, ShoppingBag, CreditCard, Settings } from "lucide-react";
+import DashboardMobileNav from "@/components/layout/DashboardMobileNav";
 
 export default async function VendeurLayout({
   children,
@@ -59,14 +60,22 @@ export default async function VendeurLayout({
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
         {/* Mobile header */}
-        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-border">
+        <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 px-4 py-3 bg-white border-b border-border">
           <Gem className="h-4 w-4 text-gold-500" />
           <span className="font-serif text-sm font-semibold">Espace Vendeur</span>
+          <DashboardMobileNav
+            title="Espace Vendeur"
+            navItems={navItems.map(({ href, label, icon }) => ({ href, label, icon }))}
+            userName={session.user.name}
+            userEmail={session.user.email}
+            userRoleLabel="Vendeur"
+            variant="light"
+          />
         </header>
 
-        <main className="flex-1 p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

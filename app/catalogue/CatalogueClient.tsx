@@ -136,9 +136,9 @@ export default function CatalogueClient({
   ).length;
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-12 lg:px-8">
+    <div className="container mx-auto max-w-7xl px-4 py-8 lg:px-8 lg:py-12">
       {/* Page header */}
-      <div className="mb-10">
+      <div className="mb-8 lg:mb-10">
         <div className="flex items-center justify-center gap-3 mb-4">
           <div className="gold-divider" />
           <span className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium">
@@ -146,19 +146,19 @@ export default function CatalogueClient({
           </span>
           <div className="gold-divider" />
         </div>
-        <h1 className="font-serif text-4xl font-semibold text-center tracking-tight">
+        <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-center tracking-tight">
           Catalogue Complet
         </h1>
-        <p className="text-muted-foreground text-center mt-2">
+        <p className="text-muted-foreground text-center mt-2 text-sm sm:text-base">
           {listings.length} objet{listings.length > 1 ? "s" : ""} disponible
           {listings.length > 1 ? "s" : ""}
         </p>
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:mb-8">
         {/* Search bar */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative flex-1 sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Rechercher une pièce, une période..."
@@ -169,7 +169,7 @@ export default function CatalogueClient({
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Filter toggle */}
           <Button
             variant="outline"
@@ -195,10 +195,10 @@ export default function CatalogueClient({
           )}
 
           {/* Divider */}
-          <div className="h-6 w-px bg-border" />
+          <div className="hidden sm:block h-6 w-px bg-border" />
 
           {/* View toggle */}
-          <div className="flex items-center rounded-md border border-input p-0.5">
+          <div className="hidden sm:flex items-center rounded-md border border-input p-0.5">
             <button
               onClick={() => setViewMode("museum")}
               className={`flex h-7 w-8 items-center justify-center rounded-sm transition-colors ${

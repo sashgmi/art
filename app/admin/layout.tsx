@@ -1,7 +1,8 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Gem, LayoutDashboard, Package, ShoppingBag, Users, BarChart3 } from "lucide-react";
+import { Gem, LayoutDashboard, Package, ShoppingBag, Users } from "lucide-react";
+import DashboardMobileNav from "@/components/layout/DashboardMobileNav";
 
 export default async function AdminLayout({
   children,
@@ -52,12 +53,20 @@ export default async function AdminLayout({
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col">
-        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-foreground text-white">
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 px-4 py-3 bg-foreground text-white">
           <Gem className="h-4 w-4 text-gold-400" />
           <span className="font-serif text-sm font-semibold">Administration</span>
+          <DashboardMobileNav
+            title="Administration"
+            navItems={navItems}
+            userName={session.user.name}
+            userEmail={session.user.email}
+            userRoleLabel="Administrateur"
+            variant="dark"
+          />
         </header>
-        <main className="flex-1 p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

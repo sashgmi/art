@@ -97,7 +97,7 @@ export default function ProductDetail({ listing, session }: Props) {
     <div className="min-h-screen bg-white">
       {/* Breadcrumb */}
       <div className="container mx-auto max-w-7xl px-4 py-4 lg:px-8">
-        <nav className="flex items-center gap-2 text-xs text-muted-foreground">
+        <nav className="flex items-center gap-2 text-xs text-muted-foreground overflow-x-auto scrollbar-none whitespace-nowrap">
           <Link href="/" className="hover:text-foreground">
             Accueil
           </Link>
@@ -117,14 +117,14 @@ export default function ProductDetail({ listing, session }: Props) {
             </>
           )}
           <span>/</span>
-          <span className="text-foreground line-clamp-1 max-w-[200px]">
+          <span className="text-foreground truncate max-w-[180px] sm:max-w-[300px]">
             {listing.displayTitle}
           </span>
         </nav>
       </div>
 
-      <div className="container mx-auto max-w-7xl px-4 pb-20 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+      <div className="container mx-auto max-w-7xl px-4 pb-16 lg:px-8 lg:pb-20">
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-16">
           {/* ── Image Gallery ──────────────────────────── */}
           <div className="space-y-4">
             {/* Main image */}
@@ -241,13 +241,13 @@ export default function ProductDetail({ listing, session }: Props) {
             </div>
 
             {/* Title */}
-            <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight lg:text-4xl">
+            <h1 className="font-serif text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
               {listing.displayTitle}
             </h1>
 
             {/* Price */}
-            <div className="flex items-baseline gap-3">
-              <span className="font-serif text-4xl font-bold text-foreground">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="font-serif text-3xl font-bold text-foreground sm:text-4xl">
                 {formatPrice(listing.displayPrice)}
               </span>
               {listing.shippingCost && listing.shippingCost > 0 ? (
@@ -389,7 +389,7 @@ export default function ProductDetail({ listing, session }: Props) {
         </div>
 
         {/* ── Description & Provenance ─────────────────── */}
-        <div className="mt-16 grid gap-12 lg:grid-cols-3">
+        <div className="mt-12 grid gap-10 lg:mt-16 lg:gap-12 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-10">
             {/* Description */}
             <section>
